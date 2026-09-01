@@ -153,7 +153,8 @@ stage.addEventListener('pointercancel',endPanDrag);
 
 document.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>errorBox.style.display='block'));
 referenceImage.addEventListener('load',fitCanvas);
-window.addEventListener('resize',()=>{stageW=stage.clientWidth;stageH=stage.clientHeight;clampPan();scheduleMain()});
+const initialViewportWidth=window.innerWidth;
+window.addEventListener('resize',()=>{if(Math.abs(window.innerWidth-initialViewportWidth)>2)fitCanvas()},{passive:true});
 fitCanvas();
 
 /* Decode all maps before the embedded viewer becomes interactive. This shifts
