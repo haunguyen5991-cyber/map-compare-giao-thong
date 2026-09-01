@@ -2,8 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>So sánh bản đồ – Hiện trạng & Định hướng</title><link rel="preload" as="image" href="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH04-BAN%20DO%20DINH%20HUONG%20PHAT%20TRIEN%20HE%20THONG%20GIAO%20THONG.jpg"><link rel="preload" as="image" href="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/HT03A-%20BAN%20DO%20HIEN%20TRANG%20HE%20THONG%20GIAO%20THONG%2C%20THOAT%20NUOC%20MUA.jpg"><link rel="preload" as="image" href="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH01-SO%20DO%20CO%20CAU%20PHAT%20TRIEN%20DO%20THI.jpg">
+<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preload" as="image" href="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH04-BAN%20DO%20DINH%20HUONG%20PHAT%20TRIEN%20HE%20THONG%20GIAO%20THONG.jpg"><link rel="preload" as="image" href="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/HT03A-%20BAN%20DO%20HIEN%20TRANG%20HE%20THONG%20GIAO%20THONG%2C%20THOAT%20NUOC%20MUA.jpg">
 <style>
 :root{--ink:#111;--muted:#666;--accent:#111;--line:#d6d6d2;--panel:#fff;--bg:#f3f3f1}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -31,7 +30,7 @@ html{background:#f3f3f1}body{overscroll-behavior:none}button,input{font:inherit}
 <section class="stage" id="stage" aria-label="Bộ so sánh hai bản đồ">
  <div class="loading-state" role="status" aria-live="polite"><div class="loading-state__inner"><span class="loading-state__spinner" aria-hidden="true"></span><span>ĐANG TẢI BẢN ĐỒ…</span></div></div>
  <div class="viewport"><div class="canvas" id="canvas"><img src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH04-BAN%20DO%20DINH%20HUONG%20PHAT%20TRIEN%20HE%20THONG%20GIAO%20THONG.jpg" alt="Bản đồ định hướng phát triển hệ thống giao thông" loading="eager" decoding="async" fetchpriority="high"><div class="before" id="before"><img src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/HT03A-%20BAN%20DO%20HIEN%20TRANG%20HE%20THONG%20GIAO%20THONG%2C%20THOAT%20NUOC%20MUA.jpg" alt="Bản đồ hiện trạng hệ thống giao thông và thoát nước mưa" loading="eager"></div></div><input class="pan-y" id="panY" type="range" min="0" max="100" value="50" aria-label="Cuộn dọc bản đồ"><input class="pan-x" id="panX" type="range" min="0" max="100" value="50" aria-label="Cuộn ngang bản đồ"></div>
- <div class="overview-panel" id="overviewPanel"><div class="overview-panel__head"><strong>SƠ ĐỒ CẤU TRÚC PHÁT TRIỂN ĐÔ THỊ</strong><button id="overviewClose" aria-label="Đóng panel">ĐÓNG ×</button></div><div class="overview-panel__view" id="overviewView"><img id="overviewImage" src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH01-SO%20DO%20CO%20CAU%20PHAT%20TRIEN%20DO%20THI.jpg" alt="Sơ đồ cơ cấu phát triển đô thị, ảnh tổng quan" loading="eager" decoding="async" fetchpriority="high"><div class="overview-panel__tools"><button id="overviewMinus">−</button><button id="overviewReset">1:1</button><button id="overviewPlus">+</button></div></div></div><button class="overview-tab" id="overviewTab" title="Mở sơ đồ cấu trúc phát triển đô thị">SƠ ĐỒ CẤU TRÚC PHÁT TRIỂN ĐÔ THỊ</button>
+ <div class="overview-panel" id="overviewPanel"><div class="overview-panel__head"><strong>SƠ ĐỒ CẤU TRÚC PHÁT TRIỂN ĐÔ THỊ</strong><button id="overviewClose" aria-label="Đóng panel">ĐÓNG ×</button></div><div class="overview-panel__view" id="overviewView"><img id="overviewImage" src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH01-SO%20DO%20CO%20CAU%20PHAT%20TRIEN%20DO%20THI.jpg" alt="Sơ đồ cơ cấu phát triển đô thị, ảnh tổng quan" loading="lazy" decoding="async" fetchpriority="low"><div class="overview-panel__tools"><button id="overviewMinus">−</button><button id="overviewReset">1:1</button><button id="overviewPlus">+</button></div></div></div><button class="overview-tab" id="overviewTab" title="Mở sơ đồ cấu trúc phát triển đô thị">SƠ ĐỒ CẤU TRÚC PHÁT TRIỂN ĐÔ THỊ</button>
  <div class="divider" id="divider"><div class="handle is-hint" role="slider" tabindex="0" aria-label="Thanh điều hướng so sánh, kéo trái hoặc phải" title="Kéo trái / phải để so sánh">↔</div></div><input class="range" id="range" type="range" min="0" max="100" value="50" aria-label="Tỷ lệ bản đồ hiện trạng"><span class="label left">HIỆN TRẠNG</span><span class="label right">ĐỊNH HƯỚNG</span><div class="error" id="error">Không thể tải hình ảnh. Vui lòng kiểm tra lại link R2.</div>
 </section><div class="note">Mẹo: dùng <b>+</b>/<b>−</b> hoặc bánh xe chuột để đọc các chú giải và chi tiết nhỏ; nút “Đặt lại” đưa về chế độ xem toàn cảnh.</div>
 </main>
@@ -154,11 +153,15 @@ fitCanvas();
 
 /* Decode all maps before the embedded viewer becomes interactive. This shifts
    the one-time rasterisation cost into initial loading instead of Notion scroll. */
-const allMapImages=[...document.querySelectorAll('.canvas img, #overviewImage')];
-Promise.all(allMapImages.map(img=>img.decode?img.decode().catch(()=>{}):Promise.resolve())).then(()=>{
+const comparisonImages=[...document.querySelectorAll('.canvas > img, .before img')];
+Promise.all(comparisonImages.map(img=>img.decode?img.decode().catch(()=>{}):Promise.resolve())).then(()=>{
   document.documentElement.classList.add('maps-ready');
   scheduleMain();
-  scheduleOverview();
+  // Load and decode the overview only after the initial comparison is ready.
+  const overviewImage=document.getElementById('overviewImage');
+  overviewImage.loading='lazy';
+  if(overviewImage.decode) overviewImage.decode().catch(()=>{}).then(()=>scheduleOverview());
+  else scheduleOverview();
 });
 
 /* =========================================================================
