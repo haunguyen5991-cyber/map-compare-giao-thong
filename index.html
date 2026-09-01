@@ -31,7 +31,7 @@ html,body{min-height:0;overflow-anchor:none}.stage{height:760px!important;min-he
 <body>
 <header><div><h1>Đối chiếu hệ thống giao thông & thoát nước mưa</h1><p>Kéo thanh trượt sang trái/phải để xem chi tiết khác biệt giữa hai bản đồ.</p></div><span class="badge">BẢN ĐỒ KỸ THUẬT · HTML INTERACTIVE</span></header>
 <main>
-<div class="toolbar"><button id="reset">↺ Đặt lại</button><button id="minus">−</button><button id="plus">+</button><div class="zoom">Phóng đại <output id="zoomValue">100%</output></div><span class="hint">Kéo thanh giữa ảnh · Cuộn chuột để zoom · Kéo nền để di chuyển khi đã zoom</span></div>
+<div class="toolbar"><button id="reset">↺ Đặt lại</button><button id="minus">−</button><button id="plus">+</button><div class="zoom">Phóng đại <output id="zoomValue">100%</output></div><span class="hint">Kéo thanh giữa ảnh · Chạm-kéo để di chuyển · Hai ngón để zoom</span></div>
 <section class="stage" id="stage" aria-label="Bộ so sánh hai bản đồ">
  <div class="loading-state" role="status" aria-live="polite"><div class="loading-state__inner"><span class="loading-state__spinner" aria-hidden="true"></span><span>ĐANG TẢI BẢN ĐỒ…</span></div></div>
  <div class="viewport"><div class="canvas" id="canvas"><img class="preview" src="assets/preview-direction.jpg" alt=""><img src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH04-BAN%20DO%20DINH%20HUONG%20PHAT%20TRIEN%20HE%20THONG%20GIAO%20THONG.jpg" alt="Bản đồ định hướng phát triển hệ thống giao thông" loading="eager" decoding="async" fetchpriority="high"><div class="before" id="before"><img class="preview" src="assets/preview-current.jpg" alt=""><img src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/HT03A-%20BAN%20DO%20HIEN%20TRANG%20HE%20THONG%20GIAO%20THONG%2C%20THOAT%20NUOC%20MUA.jpg" alt="Bản đồ hiện trạng hệ thống giao thông và thoát nước mưa" loading="eager"></div></div><input class="pan-y" id="panY" type="range" min="0" max="100" value="50" aria-label="Cuộn dọc bản đồ"><input class="pan-x" id="panX" type="range" min="0" max="100" value="50" aria-label="Cuộn ngang bản đồ"></div>
@@ -151,6 +151,32 @@ function endPanDrag(){ panActive=false; stage.classList.remove('dragging'); }
 stage.addEventListener('pointerup',endPanDrag);
 stage.addEventListener('pointercancel',endPanDrag);
 
+
+/* Touch gestures: one finger pans, two fingers pinch-zoom. Capture listeners
+   take over only for touch pointers and never interfere with the divider/tools. */
+const mainTouches=new Map(); let pinchStartDistance=0, pinchStartScale=1;
+function touchDistance(a,b){return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)}
+function isMainTouchTarget(target){return !target.closest('.overview-panel')&&!target.closest('.overview-tab')&&!target.closest('input')&&target!==divider}
+stage.addEventListener('pointerdown',e=>{
+  if(e.pointerType!=='touch'||!isMainTouchTarget(e.target)) return;
+  mainTouches.set(e.pointerId,e);
+  if(mainTouches.size===2){
+    panActive=false; stage.classList.remove('dragging');
+    const pts=[...mainTouches.values()]; pinchStartDistance=touchDistance(pts[0],pts[1]); pinchStartScale=scale;
+    e.preventDefault();
+  }
+},true);
+stage.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='touch'||!mainTouches.has(e.pointerId)) return;
+  mainTouches.set(e.pointerId,e);
+  if(mainTouches.size>=2){
+    const pts=[...mainTouches.values()];
+    if(pinchStartDistance){setZoom(pinchStartScale*touchDistance(pts[0],pts[1])/pinchStartDistance);e.preventDefault();e.stopImmediatePropagation()}
+  }
+},true);
+function endMainTouch(e){if(e.pointerType==='touch'){mainTouches.delete(e.pointerId);if(mainTouches.size<2)pinchStartDistance=0}}
+stage.addEventListener('pointerup',endMainTouch,true);stage.addEventListener('pointercancel',endMainTouch,true);
+
 document.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>errorBox.style.display='block'));
 referenceImage.addEventListener('load',fitCanvas);
 const initialViewportWidth=window.innerWidth;
@@ -218,6 +244,19 @@ overviewView.addEventListener('pointermove',e=>{
 function endOverviewDrag(){ ovDrag=false; overviewView.classList.remove('dragging'); }
 overviewView.addEventListener('pointerup',endOverviewDrag);
 overviewView.addEventListener('pointercancel',endOverviewDrag);
+const overviewTouches=new Map(); let overviewPinchDistance=0, overviewPinchScale=1;
+overviewView.addEventListener('pointerdown',e=>{
+  if(e.pointerType!=='touch'||e.target.closest('.overview-panel__tools')) return;
+  overviewTouches.set(e.pointerId,e);
+  if(overviewTouches.size===2){ovDrag=false;const pts=[...overviewTouches.values()];overviewPinchDistance=touchDistance(pts[0],pts[1]);overviewPinchScale=ovScale;e.preventDefault()}
+},true);
+overviewView.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='touch'||!overviewTouches.has(e.pointerId)) return;
+  overviewTouches.set(e.pointerId,e);
+  if(overviewTouches.size>=2&&overviewPinchDistance){const pts=[...overviewTouches.values()];setOverviewZoom(overviewPinchScale*touchDistance(pts[0],pts[1])/overviewPinchDistance);e.preventDefault();e.stopImmediatePropagation()}
+},true);
+function endOverviewTouch(e){if(e.pointerType==='touch'){overviewTouches.delete(e.pointerId);if(overviewTouches.size<2)overviewPinchDistance=0}}
+overviewView.addEventListener('pointerup',endOverviewTouch,true);overviewView.addEventListener('pointercancel',endOverviewTouch,true);
 overviewMinus.onclick=()=>setOverviewZoom(ovScale-.25);
 overviewPlus.onclick=()=>setOverviewZoom(ovScale+.25);
 overviewReset.onclick=()=>{ovScale=1;ovX=0;ovY=0;scheduleOverview();};
