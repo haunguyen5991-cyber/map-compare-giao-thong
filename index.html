@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>So sánh bản đồ – Hiện trạng & Định hướng</title>
+<title>So sánh bản đồ – Hiện trạng & Định hướng</title><link rel="preload" as="image" href="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH04-BAN%20DO%20DINH%20HUONG%20PHAT%20TRIEN%20HE%20THONG%20GIAO%20THONG.jpg"><link rel="preload" as="image" href="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/HT03A-%20BAN%20DO%20HIEN%20TRANG%20HE%20THONG%20GIAO%20THONG%2C%20THOAT%20NUOC%20MUA.jpg"><link rel="preload" as="image" href="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH01-SO%20DO%20CO%20CAU%20PHAT%20TRIEN%20DO%20THI.jpg">
 <style>
 :root{--ink:#111;--muted:#666;--accent:#111;--line:#d6d6d2;--panel:#fff;--bg:#f3f3f1}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -16,6 +16,12 @@ main{max-width:1500px;margin:0 auto;padding:8px clamp(8px,2vw,20px) 10px}.toolba
 
 /* Professional interaction polish */
 html{background:#f3f3f1}body{overscroll-behavior:none}button,input{font:inherit}.stage{isolation:isolate;user-select:none;-webkit-user-select:none}.viewport{background:#e9e9e6}.canvas,.before{backface-visibility:hidden;transform-style:preserve-3d}.divider{width:38px}.divider::after{width:2px;background:#111;box-shadow:0 0 0 1px #fff,0 0 8px #1114}.handle{width:30px;height:22px;border-radius:3px;font-size:12px}.overview-tab{right:0;top:50%;width:34px;height:clamp(180px,62%,520px);transform:translateY(-50%);padding:12px 6px;border:1px solid #fff;box-shadow:0 2px 12px #0004;font-size:7px;letter-spacing:.04em;line-height:1.05}.overview-panel{will-change:transform}.overview-panel__view{overscroll-behavior:none;user-select:none;-webkit-user-select:none}.overview-panel__head{height:42px;padding:0 14px}.overview-panel__head strong{font-size:10px}.overview-panel__head button{min-width:72px;height:28px;border-radius:3px;font-size:10px}.overview-panel__tools{bottom:14px;border-radius:3px;box-shadow:0 3px 14px #1113}.overview-panel__tools button{min-width:34px;height:28px}.pan-y,.pan-x{touch-action:none}.pan-y{right:3px}.pan-x{bottom:3px}.label{box-shadow:0 1px 5px #1112}.note{opacity:.8}
+
+/* Stable first paint for embedded Notion iframes: reserve the viewer, promote
+   each image to its own compositor layer, and reveal only after decoding. */
+.stage{min-height:430px;height:min(84vh,950px);contain:strict;transform:translateZ(0);backface-visibility:hidden}.viewport,.overview-panel__view{transform:translateZ(0);backface-visibility:hidden}.canvas,.before,.overview-panel__view img{will-change:transform;backface-visibility:hidden}
+
+.loading-state{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:#f3f3f1;color:#111;transition:opacity 220ms ease,visibility 220ms ease;pointer-events:none}.loading-state__inner{display:flex;align-items:center;gap:10px;padding:11px 15px;border:1px solid #111;background:#fff;box-shadow:0 4px 18px #1112;font-size:10px;font-weight:700;letter-spacing:.12em}.loading-state__spinner{width:13px;height:13px;border:2px solid #ccc;border-top-color:#111;border-radius:50%;animation:map-spin .75s linear infinite}@keyframes map-spin{to{transform:rotate(360deg)}}.maps-ready .loading-state{opacity:0;visibility:hidden}
 </style>
 </head>
 <body>
@@ -23,8 +29,9 @@ html{background:#f3f3f1}body{overscroll-behavior:none}button,input{font:inherit}
 <main>
 <div class="toolbar"><button id="reset">↺ Đặt lại</button><button id="minus">−</button><button id="plus">+</button><div class="zoom">Phóng đại <output id="zoomValue">100%</output></div><span class="hint">Kéo thanh giữa ảnh · Cuộn chuột để zoom · Kéo nền để di chuyển khi đã zoom</span></div>
 <section class="stage" id="stage" aria-label="Bộ so sánh hai bản đồ">
- <div class="viewport"><div class="canvas" id="canvas"><img src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH04-BAN%20DO%20DINH%20HUONG%20PHAT%20TRIEN%20HE%20THONG%20GIAO%20THONG.jpg" alt="Bản đồ định hướng phát triển hệ thống giao thông" loading="eager"><div class="before" id="before"><img src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/HT03A-%20BAN%20DO%20HIEN%20TRANG%20HE%20THONG%20GIAO%20THONG%2C%20THOAT%20NUOC%20MUA.jpg" alt="Bản đồ hiện trạng hệ thống giao thông và thoát nước mưa" loading="eager"></div></div><input class="pan-y" id="panY" type="range" min="0" max="100" value="50" aria-label="Cuộn dọc bản đồ"><input class="pan-x" id="panX" type="range" min="0" max="100" value="50" aria-label="Cuộn ngang bản đồ"></div>
- <div class="overview-panel" id="overviewPanel"><div class="overview-panel__head"><strong>SƠ ĐỒ CẤU TRÚC PHÁT TRIỂN ĐÔ THỊ</strong><button id="overviewClose" aria-label="Đóng panel">ĐÓNG ×</button></div><div class="overview-panel__view" id="overviewView"><img id="overviewImage" src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH01-SO%20DO%20CO%20CAU%20PHAT%20TRIEN%20DO%20THI.jpg" alt="Sơ đồ cơ cấu phát triển đô thị, ảnh tổng quan" loading="lazy"><div class="overview-panel__tools"><button id="overviewMinus">−</button><button id="overviewReset">1:1</button><button id="overviewPlus">+</button></div></div></div><button class="overview-tab" id="overviewTab" title="Mở sơ đồ cấu trúc phát triển đô thị">SƠ ĐỒ CẤU TRÚC PHÁT TRIỂN ĐÔ THỊ</button>
+ <div class="loading-state" role="status" aria-live="polite"><div class="loading-state__inner"><span class="loading-state__spinner" aria-hidden="true"></span><span>ĐANG TẢI BẢN ĐỒ…</span></div></div>
+ <div class="viewport"><div class="canvas" id="canvas"><img src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH04-BAN%20DO%20DINH%20HUONG%20PHAT%20TRIEN%20HE%20THONG%20GIAO%20THONG.jpg" alt="Bản đồ định hướng phát triển hệ thống giao thông" loading="eager" decoding="async" fetchpriority="high"><div class="before" id="before"><img src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/HT03A-%20BAN%20DO%20HIEN%20TRANG%20HE%20THONG%20GIAO%20THONG%2C%20THOAT%20NUOC%20MUA.jpg" alt="Bản đồ hiện trạng hệ thống giao thông và thoát nước mưa" loading="eager"></div></div><input class="pan-y" id="panY" type="range" min="0" max="100" value="50" aria-label="Cuộn dọc bản đồ"><input class="pan-x" id="panX" type="range" min="0" max="100" value="50" aria-label="Cuộn ngang bản đồ"></div>
+ <div class="overview-panel" id="overviewPanel"><div class="overview-panel__head"><strong>SƠ ĐỒ CẤU TRÚC PHÁT TRIỂN ĐÔ THỊ</strong><button id="overviewClose" aria-label="Đóng panel">ĐÓNG ×</button></div><div class="overview-panel__view" id="overviewView"><img id="overviewImage" src="https://pub-21171ec87ede4630929bc563a071399f.r2.dev/QH01-SO%20DO%20CO%20CAU%20PHAT%20TRIEN%20DO%20THI.jpg" alt="Sơ đồ cơ cấu phát triển đô thị, ảnh tổng quan" loading="eager" decoding="async" fetchpriority="high"><div class="overview-panel__tools"><button id="overviewMinus">−</button><button id="overviewReset">1:1</button><button id="overviewPlus">+</button></div></div></div><button class="overview-tab" id="overviewTab" title="Mở sơ đồ cấu trúc phát triển đô thị">SƠ ĐỒ CẤU TRÚC PHÁT TRIỂN ĐÔ THỊ</button>
  <div class="divider" id="divider"><div class="handle is-hint" role="slider" tabindex="0" aria-label="Thanh điều hướng so sánh, kéo trái hoặc phải" title="Kéo trái / phải để so sánh">↔</div></div><input class="range" id="range" type="range" min="0" max="100" value="50" aria-label="Tỷ lệ bản đồ hiện trạng"><span class="label left">HIỆN TRẠNG</span><span class="label right">ĐỊNH HƯỚNG</span><div class="error" id="error">Không thể tải hình ảnh. Vui lòng kiểm tra lại link R2.</div>
 </section><div class="note">Mẹo: dùng <b>+</b>/<b>−</b> hoặc bánh xe chuột để đọc các chú giải và chi tiết nhỏ; nút “Đặt lại” đưa về chế độ xem toàn cảnh.</div>
 </main>
@@ -144,6 +151,15 @@ document.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>e
 referenceImage.addEventListener('load',fitCanvas);
 window.addEventListener('resize',fitCanvas);
 fitCanvas();
+
+/* Decode all maps before the embedded viewer becomes interactive. This shifts
+   the one-time rasterisation cost into initial loading instead of Notion scroll. */
+const allMapImages=[...document.querySelectorAll('.canvas img, #overviewImage')];
+Promise.all(allMapImages.map(img=>img.decode?img.decode().catch(()=>{}):Promise.resolve())).then(()=>{
+  document.documentElement.classList.add('maps-ready');
+  scheduleMain();
+  scheduleOverview();
+});
 
 /* =========================================================================
    Overview panel ("Sơ đồ cấu trúc phát triển đô thị")
