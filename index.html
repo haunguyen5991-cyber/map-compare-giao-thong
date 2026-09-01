@@ -21,6 +21,11 @@ html{background:#f3f3f1}body{overscroll-behavior:none}button,input{font:inherit}
 .stage{min-height:430px;height:min(84vh,950px);contain:strict;transform:translateZ(0);backface-visibility:hidden}.viewport,.overview-panel__view{transform:translateZ(0);backface-visibility:hidden}.canvas,.before,.overview-panel__view img{will-change:transform;backface-visibility:hidden}
 
 .loading-state{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:#f3f3f1;color:#111;transition:opacity 220ms ease,visibility 220ms ease;pointer-events:none}.loading-state__inner{display:flex;align-items:center;gap:10px;padding:11px 15px;border:1px solid #111;background:#fff;box-shadow:0 4px 18px #1112;font-size:10px;font-weight:700;letter-spacing:.12em}.loading-state__spinner{width:13px;height:13px;border:2px solid #ccc;border-top-color:#111;border-radius:50%;animation:map-spin .75s linear infinite}@keyframes map-spin{to{transform:rotate(360deg)}}.maps-ready .loading-state{opacity:0;visibility:hidden}
+
+/* Mobile/Notion stability: keep iframe geometry constant while the browser
+   address bar and visual viewport settle on first intersection. */
+html,body{min-height:0;overflow-anchor:none}.stage{height:760px!important;min-height:760px!important;max-height:760px;flex:none;overflow-anchor:none}.overview-panel,.overview-panel__view,.viewport{overflow-anchor:none}
+@media(max-width:700px){.stage{height:620px!important;min-height:620px!important;max-height:620px}}
 </style>
 </head>
 <body>
@@ -148,7 +153,7 @@ stage.addEventListener('pointercancel',endPanDrag);
 
 document.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>errorBox.style.display='block'));
 referenceImage.addEventListener('load',fitCanvas);
-window.addEventListener('resize',fitCanvas);
+window.addEventListener('resize',()=>{stageW=stage.clientWidth;stageH=stage.clientHeight;clampPan();scheduleMain()});
 fitCanvas();
 
 /* Decode all maps before the embedded viewer becomes interactive. This shifts
