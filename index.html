@@ -40,6 +40,7 @@ html,body{min-height:0;overflow-anchor:none}.stage{height:760px!important;min-he
 @media(max-width:700px){.overview-tab{height:50px!important;padding:5px 9px!important;gap:7px!important;border-radius:10px 10px 0 0!important}.overview-tab::before{width:38px!important;height:30px!important;flex-basis:38px!important}.overview-tab::after{font-size:7.5px!important;letter-spacing:.04em!important}}
 
 /* Full-height overview mode: the compact CTA expands to the entire viewer. */
+/* Overview pan persists after release; only the 1:1 reset returns to center. */
 .overview-panel{height:100%!important;max-height:100%!important;border-radius:16px 16px 0 0!important}.overview-panel__view{top:52px!important}.immersive .overview-panel{height:100%!important}
 @media(max-width:700px){.overview-panel{height:100%!important;max-height:100%!important}.overview-panel__view{top:52px!important}}
 
@@ -264,7 +265,12 @@ function paintOverview(){
   ovRaf=0; if(!ovDirty) return; ovDirty=false;
   overviewImage.style.transform=`translate3d(calc(-50% + ${ovX}px),calc(-50% + ${ovY}px),0) scale(${ovScale})`;
 }
-function setOverviewZoom(next){ ovScale=Math.max(1,Math.min(5,next)); scheduleOverview(); }
+function clampOverviewPan(){
+  const maxX=Math.max(0,(overviewView.clientWidth*(ovScale-1))/2);
+  const maxY=Math.max(0,(overviewView.clientHeight*(ovScale-1))/2);
+  ovX=Math.max(-maxX,Math.min(maxX,ovX)); ovY=Math.max(-maxY,Math.min(maxY,ovY));
+}
+function setOverviewZoom(next){ ovScale=Math.max(1,Math.min(5,next)); clampOverviewPan(); scheduleOverview(); }
 
 function ensureOverviewLoaded(){overviewImage.loading='eager';overviewImage.decoding='sync';overviewImage.fetchPriority='high';if(!overviewImage.dataset.hq){overviewImage.dataset.hq='1';const clean=overviewImage.src.split('?')[0];overviewImage.src=clean+'?hq=1'}if(overviewImage.decode)overviewImage.decode().catch(()=>{}).then(()=>scheduleOverview());else scheduleOverview()}
 overviewTab.addEventListener('click',()=>{overviewPanel.classList.add('is-open');ensureOverviewLoaded()});
@@ -284,9 +290,9 @@ overviewView.addEventListener('pointerdown',e=>{
 overviewView.addEventListener('pointermove',e=>{
   if(!ovDrag) return;
   ovX=ovBaseX+e.clientX-ovStartX; ovY=ovBaseY+e.clientY-ovStartY;
-  scheduleOverview();
+  clampOverviewPan(); scheduleOverview();
 });
-function endOverviewDrag(){ ovDrag=false; overviewView.classList.remove('dragging'); ovX=0; ovY=0; scheduleOverview(); }
+function endOverviewDrag(){ ovDrag=false; overviewView.classList.remove('dragging'); scheduleOverview(); }
 overviewView.addEventListener('pointerup',endOverviewDrag);
 overviewView.addEventListener('pointercancel',endOverviewDrag);
 const overviewTouches=new Map(); let overviewPinchDistance=0, overviewPinchScale=1;
@@ -300,7 +306,7 @@ overviewView.addEventListener('pointermove',e=>{
   overviewTouches.set(e.pointerId,e);
   if(overviewTouches.size>=2&&overviewPinchDistance){const pts=[...overviewTouches.values()];setOverviewZoom(overviewPinchScale*touchDistance(pts[0],pts[1])/overviewPinchDistance);e.preventDefault();e.stopImmediatePropagation()}
 },true);
-function endOverviewTouch(e){if(e.pointerType==='touch'){overviewTouches.delete(e.pointerId);if(overviewTouches.size<2){overviewPinchDistance=0;ovX=0;ovY=0;scheduleOverview()}}}
+function endOverviewTouch(e){if(e.pointerType==='touch'){overviewTouches.delete(e.pointerId);if(overviewTouches.size<2){overviewPinchDistance=0;clampOverviewPan();scheduleOverview()}}}
 overviewView.addEventListener('pointerup',endOverviewTouch,true);overviewView.addEventListener('pointercancel',endOverviewTouch,true);
 overviewMinus.onclick=()=>setOverviewZoom(ovScale-.25);
 overviewPlus.onclick=()=>setOverviewZoom(ovScale+.25);
